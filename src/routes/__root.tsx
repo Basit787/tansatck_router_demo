@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   createRootRoute,
   Link,
@@ -9,12 +10,11 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 export const rootRoute = createRootRoute({
   component: () => {
-    const isAdmin = localStorage.getItem("role") === "admin";
-    const isSeller = localStorage.getItem("role") === "seller";
-
+    const { role, isAuthenticated, logout } = useAuth();
     const navigate = useNavigate();
+
     const handleLogout = () => {
-      localStorage.removeItem("role");
+      logout();
       navigate({ to: "/" });
     };
     return (
@@ -27,24 +27,38 @@ export const rootRoute = createRootRoute({
             <Link to="/about" className="[&.active]:font-bold">
               About
             </Link>
-            <Link to="/login" className="[&.active]:font-bold">
-              Login
+            <Link to="/contact" className="[&.active]:font-bold">
+              Contact
             </Link>
-            {isAdmin && (
+            <Link to="/services" className="[&.active]:font-bold">
+              Services
+            </Link>
+            {!isAuthenticated && (
+              <>
+                <Link to="/login" className="[&.active]:font-bold">
+                  Login
+                </Link>
+                <Link to="/register" className="[&.active]:font-bold">
+                  Register
+                </Link>
+                <Link to="/forgot-password" className="[&.active]:font-bold">
+                  Forgot Password
+                </Link>
+              </>
+            )}
+            {role === "admin" && (
               <Link to="/admin" className="[&.active]:font-bold">
                 Admin
               </Link>
             )}
-            {isSeller && (
+            {role === "seller" && (
               <Link to="/seller" className="[&.active]:font-bold">
                 Seller
               </Link>
             )}
           </div>
           <div>
-            {(isAdmin || isSeller) && (
-              <Button onClick={handleLogout}>Logout</Button>
-            )}
+            {isAuthenticated && <Button onClick={handleLogout}>Logout</Button>}
           </div>
         </div>
         <hr />

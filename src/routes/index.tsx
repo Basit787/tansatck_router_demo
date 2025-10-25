@@ -1,4 +1,6 @@
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Admin from "@/pages/Admin";
+import Home from "@/pages/Home";
 import { Login } from "@/pages/Login";
 import NotFound from "@/pages/Not-Found";
 import Seller from "@/pages/Seller";
@@ -9,10 +11,7 @@ import {
   createRouter,
 } from "@tanstack/react-router";
 import About from "../pages/About";
-import Home from "../pages/Home";
 import { rootRoute } from "./__root";
-
-export const userRole = localStorage.getItem("role") || "user";
 
 //index route
 const indexRoute = createRoute({
@@ -48,42 +47,45 @@ const loginRoute = createRoute({
 });
 
 //admin routes
-const adminLayoutRoute = createRoute({
+const adminRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "admin",
-  component: Outlet,
-});
-
-const adminDashboardRoute = createRoute({
-  getParentRoute: () => adminLayoutRoute,
-  path: "/", // index
-  component: Admin,
+  component: () => (
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <Admin />
+    </ProtectedRoute>
+  ),
 });
 
 const adminUsersRoute = createRoute({
-  getParentRoute: () => adminLayoutRoute,
-  path: "users",
-  component: () => <div>Admin - Manage Users</div>,
+  getParentRoute: () => rootRoute,
+  path: "admin/users",
+  component: () => (
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <div>Admin - Manage Users</div>
+    </ProtectedRoute>
+  ),
 });
 
 //seller routes
-
-const sellerLayoutRoute = createRoute({
+const sellerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "seller",
-  component: Outlet,
-});
-
-const sellerDashboardRoute = createRoute({
-  getParentRoute: () => sellerLayoutRoute,
-  path: "/",
-  component: Seller,
+  component: () => (
+    <ProtectedRoute allowedRoles={["seller"]}>
+      <Seller />
+    </ProtectedRoute>
+  ),
 });
 
 const sellerOrdersRoute = createRoute({
-  getParentRoute: () => sellerLayoutRoute,
-  path: "orders",
-  component: () => <div>Seller - Manage Orders</div>,
+  getParentRoute: () => rootRoute,
+  path: "seller/orders",
+  component: () => (
+    <ProtectedRoute allowedRoles={["seller"]}>
+      <div>Seller - Manage Orders</div>
+    </ProtectedRoute>
+  ),
 });
 
 //not found
@@ -93,27 +95,20 @@ const notFoundRoute = createRoute({
   component: NotFound,
 });
 
-const userRoles = [];
-
-if (userRole === "admin") {
-  userRoles.push(
-    adminLayoutRoute.addChildren([adminDashboardRoute, adminUsersRoute])
-  );
-} else if (userRole === "seller") {
-  userRoles.push(
-    sellerLayoutRoute.addChildren([sellerDashboardRoute, sellerOrdersRoute])
-  );
-}
-
 const routeTree = rootRoute.addChildren([
   indexRoute,
   aboutRoute.addChildren([nestedAbout, nestedAbout1]),
   loginRoute,
+  adminRoute,
+  adminUsersRoute,
+  sellerRoute,
+  sellerOrdersRoute,
   notFoundRoute,
-  ...userRoles,
 ]);
 
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+});
 
 declare module "@tanstack/react-router" {
   interface Register {

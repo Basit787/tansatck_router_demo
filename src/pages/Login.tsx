@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "@tanstack/react-router";
-import { AlertLogin } from "./alert";
+import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const formSchema = z.object({
@@ -35,14 +35,15 @@ export function Login() {
   });
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   function onSubmit(data: z.infer<typeof formSchema>) {
     const { username, password } = data;
     if (username === "admin" && password === "admin123") {
-      localStorage.setItem("role", "admin");
+      login("admin");
       navigate({ to: "/admin" });
     } else if (username === "seller" && password === "seller123") {
-      localStorage.setItem("role", "seller");
+      login("seller");
       navigate({ to: "/seller" });
     }
   }
